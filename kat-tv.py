@@ -62,13 +62,14 @@ class GetKatTV(object):
             writer = csv.writer(output,
                                 quoting=csv.QUOTE_ALL)
             writer.writerow([torrent['title'],
+                             torrent['number'],
                              torrent['size'],
                              torrent['files'],
                              torrent['age'],
                              torrent['seed'],
                              torrent['leech'],
                              torrent['url']])
-            print(output.getvalue())
+        print(output.getvalue())
 
     def show(self, args):
         self.cache_read()
