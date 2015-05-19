@@ -7,6 +7,7 @@ Usage:
     kat-tv.py search [options]
     kat-tv.py show [options]
     kat-tv.py html [options]
+    kat-tv.py csv [options]
     kat-tv.py status
 
 Options:
@@ -21,8 +22,10 @@ Options:
 from docopt import docopt
 import re
 import os
+import io
+import csv
 import errno
-import urlparse
+# from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 from selenium import webdriver
@@ -42,6 +45,7 @@ configDir = os.path.dirname(configDirCacheFile)
 
 
 class GetKatTV(object):
+
     def __init__(self):
         try:
             os.makedirs(configDir)
@@ -51,14 +55,30 @@ class GetKatTV(object):
         self.driver = webdriver.PhantomJS()
         self.torrents = []
 
+    def csv(self, args):
+        output = io.StringIO()
+        self.cache_read()
+        for torrent in self.torrents:
+            writer = csv.writer(output,
+                                quoting=csv.QUOTE_ALL)
+            writer.writerow([torrent['title'],
+                             torrent['size'],
+                             torrent['files'],
+                             torrent['age'],
+                             torrent['seed'],
+                             torrent['leech'],
+                             torrent['url']])
+            print(output.getvalue())
+
     def show(self, args):
         self.cache_read()
         for torrent in self.torrents:
-            print(str(torrent['page']) + ":" +
-                  str(torrent['number']) + "\t" +
-                  torrent['title'])
-
-            # print(torrent)
+            if args['--verbose']:
+                print(torrent)
+            else:
+                print(str(torrent['page']) + ":" +
+                      str(torrent['number']) + "\t" +
+                      torrent['title'])
 
     def scrape(self, args):
         self.torrents = self.scrape_kat_tv_torrents()
@@ -97,7 +117,10 @@ class GetKatTV(object):
                 if pageno <= 1:
                     self.driver.get(link)
                 else:
-                    self.driver.get(urlparse.urljoin(link, str(pageno), "/"))
+                    pageurl = "".join([link, str(pageno), "/"])
+                    print("pageurl: " + pageurl)
+                    self.driver.get(pageurl)
+
                 s = BeautifulSoup(self.driver.page_source)
                 sleep(1)
             except:
@@ -128,6 +151,10 @@ class GetKatTV(object):
                     for tata in ta:
                         torrent['title'] = tata.text
 
+                    print(str(torrent['page']) + ":" +
+                          str(torrent['number']) + "\t" +
+                          torrent['title'])
+
                     self.torrents.append(torrent)
             pageno = pageno + 1
 
@@ -142,6 +169,8 @@ def main():
         scraper.scrape(args)
     elif args['show']:
         scraper.show(args)
+    elif args['csv']:
+        scraper.csv(args)
 
 
 if __name__ == "__main__":
