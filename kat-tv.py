@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""torrentfinder
+"""torrentfinder 0.1.2
+(c) 2015 Justin Hoppensteadt <justinrocksmadscience@gmail.com>
 
 Usage:
     kat-tv.py update [options]
@@ -13,11 +14,16 @@ Usage:
 Options:
     -h --help       This message
     -c --cache      Cache Only
+    -t --torrent    Use .torrent files vs magent URLs
     -u --update     Force Update
     -v --verbose    Verbose Output
     -D --debug      Debug Output
 
 """
+
+# TODO: Smart Cache, save searches
+# TODO: Use .torrent files
+# TODO: Threads
 
 from docopt import docopt
 import re
