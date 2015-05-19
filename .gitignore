@@ -61,3 +61,4 @@ bin/
 include/
 lib/
 .ropeproject/
+dumps/
