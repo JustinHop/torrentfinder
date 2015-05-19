@@ -79,10 +79,7 @@ class GetKatTV(object):
                       torrent['title'])
 
     def scrape(self, args):
-        if args['link']:
-            self.torrents = self.scrape_kat(link=args['link'])
-        else:
-            self.torrents = self.scrape_kat()
+        self.torrents = self.scrape_kat(args)
         self.cache_save()
         self.driver.quit()
 
@@ -100,7 +97,10 @@ class GetKatTV(object):
         except OSError:
             raise
 
-    def scrape_kat(self, link=linkTV):
+    def scrape_kat(self, args, link=linkTV):
+
+        if args['SEARCH']:
+            link = "http://kickass.to/usearch/" + args['SEARCH'] + "/"
 
         number = 1
         pageno = 1
@@ -163,9 +163,9 @@ class GetKatTV(object):
 
 
 def main():
-    args = docopt(__doc__, version='TorrentFinder 0.1.0')
+    args = docopt(__doc__, version='TorrentFinder 0.2.0')
     scraper = GetKatTV()
-    if args['update']:
+    if args['update'] or args['SEARCH']:
         scraper.scrape(args)
     elif args['show']:
         scraper.show(args)
