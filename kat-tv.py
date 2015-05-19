@@ -4,7 +4,7 @@
 
 Usage:
     kat-tv.py update [options]
-    kat-tv.py search [options]
+    kat-tv.py search [options] [SEARCH]
     kat-tv.py show [options]
     kat-tv.py html [options]
     kat-tv.py csv [options]
@@ -35,11 +35,9 @@ import json
 # import yaml
 from time import sleep
 
-link = "http://kickass.to/tv/"
+linkTV = "http://kickass.to/tv/"
 cellMainLink = {}
 cellMainLink['class'] = "cellMainLink"
-pageNextButton = {}
-pageNextButton['class'] = "turnoverButton"
 configDirCacheFile = os.path.expanduser("~/.config/torrentfinder/cache.json")
 configDir = os.path.dirname(configDirCacheFile)
 
@@ -62,7 +60,6 @@ class GetKatTV(object):
             writer = csv.writer(output,
                                 quoting=csv.QUOTE_ALL)
             writer.writerow([torrent['title'],
-                             torrent['number'],
                              torrent['size'],
                              torrent['files'],
                              torrent['age'],
@@ -82,7 +79,10 @@ class GetKatTV(object):
                       torrent['title'])
 
     def scrape(self, args):
-        self.torrents = self.scrape_kat_tv_torrents()
+        if args['link']:
+            self.torrents = self.scrape_kat(link=args['link'])
+        else:
+            self.torrents = self.scrape_kat()
         self.cache_save()
         self.driver.quit()
 
@@ -100,7 +100,7 @@ class GetKatTV(object):
         except OSError:
             raise
 
-    def scrape_kat_tv_torrents(self):
+    def scrape_kat(self, link=linkTV):
 
         number = 1
         pageno = 1
@@ -164,7 +164,6 @@ class GetKatTV(object):
 
 def main():
     args = docopt(__doc__, version='TorrentFinder 0.1.0')
-    print(args)
     scraper = GetKatTV()
     if args['update']:
         scraper.scrape(args)
@@ -172,6 +171,8 @@ def main():
         scraper.show(args)
     elif args['csv']:
         scraper.csv(args)
+    else:
+        print(args)
 
 
 if __name__ == "__main__":
