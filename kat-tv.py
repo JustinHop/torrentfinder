@@ -51,13 +51,25 @@ class GetKatTV(object):
         self.torrents = []
 
     def show(self, args):
+        self.cache_read()
         for torrent in self.torrents:
-            print(torrent)
+            print(str(torrent['page']) + ":" +
+                  str(torrent['number']) + "\t" +
+                  torrent['title'])
+
+            # print(torrent)
 
     def scrape(self, args):
         self.torrents = self.scrape_kat_tv_torrents()
         self.cache_save()
         self.driver.quit()
+
+    def cache_read(self):
+        try:
+            with open(configDirCacheFile, 'r') as infile:
+                self.torrents = json.load(infile)
+        except OSError:
+            raise
 
     def cache_save(self):
         try:
@@ -71,13 +83,15 @@ class GetKatTV(object):
 
         number = 1
         pageno = 2
-        pageend = 100
+        pageend = 400
 
-        s = BeautifulSoup(self.driver.page_source)
         r = re.compile(r'^magnet.*')
         pageend = pageend + 2
+        if pageend > 400:
+            pageend = 400
 
         while pageno < pageend:
+            s = BeautifulSoup(self.driver.page_source)
             print("Pages Processed: " + str(pageno - 2) +
                   ", Torrents Processed: " + str(number))
             for a in s.find_all('a', href=r):
@@ -106,16 +120,20 @@ class GetKatTV(object):
                         torrent['title'] = tata.text
 
                     self.torrents.append(torrent)
-            next_page_elem = self.driver.find_element_by_link_text(str(pageno))
+            try:
+                next_page_elem = self.driver.find_element_by_link_text(
+                    str(pageno))
 
-            if next_page_elem:
-                try:
-                    next_page_elem.click()
-                except:
+                if next_page_elem:
+                    try:
+                        next_page_elem.click()
+                    except:
+                        break
+                    pageno = pageno + 1
+                    sleep(1)
+                else:
                     break
-                pageno = pageno + 1
-                sleep(1)
-            else:
+            except:
                 break
 
         return self.torrents
