@@ -1,6 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""torrentfinder
 
+Usage:
+    kat-tv.py update [options]
+    kat-tv.py search [options]
+    kat-tv.py show [options]
+    kat-tv.py html [options]
+    kat-tv.py status
+
+Options:
+    -h --help       This message
+    -c --cache      Cache Only
+    -u --update     Force Update
+    -v --verbose    Verbose Output
+    -D --debug      Debug Output
+
+"""
+
+from docopt import docopt
 import re
 import os
 import errno
@@ -32,12 +50,13 @@ class GetKatTV(object):
         self.driver = webdriver.PhantomJS()
         self.torrents = []
 
-    def scrape(self):
-        self.torrents = self.scrape_kat_tv_torrents()
-        self.cache_save()
+    def show(self, args):
         for torrent in self.torrents:
             print(torrent)
 
+    def scrape(self, args):
+        self.torrents = self.scrape_kat_tv_torrents()
+        self.cache_save()
         self.driver.quit()
 
     def cache_save(self):
@@ -103,8 +122,13 @@ class GetKatTV(object):
 
 
 def main():
+    args = docopt(__doc__, version='TorrentFinder 0.1.0')
+    print(args)
     scraper = GetKatTV()
-    scraper.scrape()
+    if args['update']:
+        scraper.scrape(args)
+    elif args['show']:
+        scraper.show(args)
 
 
 if __name__ == "__main__":
